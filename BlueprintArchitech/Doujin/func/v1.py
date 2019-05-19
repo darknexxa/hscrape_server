@@ -1,10 +1,12 @@
-from BlueprintArchitech.Doujin.lib.v1 import crawl_erolord, crawl_nhentai, makepdf
+from BlueprintArchitech.Library.v1 import crawl_erolord, crawl_nhentai, makepdf, lister, check_pdf
 class hentai_scraper:
   """docstring"""
   def __init__(self, mid,hsite,ctype):
     self.mid = mid
     self.hsite = hsite
     self.ctype = ctype 
+    self.lister = lister(self.hsite,self.ctype,self.mid)
+    self.pdf = check_pdf(self.hsite,self.ctype,self.mid)
 
   def scraper(self):
     if self.hsite == "erolord":

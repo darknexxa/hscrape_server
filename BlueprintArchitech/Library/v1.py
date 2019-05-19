@@ -7,6 +7,39 @@ from os.path import isfile, join
 import re
 import img2pdf
 import setting 
+# 
+def check_pdf(hsite,ctype,mid):
+  try:
+    pdfpath = setting.pdfdirectory+"/"+hsite+"/"+ctype+"/"+mid+".pdf"
+    fh = open(pdfpath, 'r')
+    return {"msg":"file found","status":200, "file": pdfpath}
+  except FileNotFoundError:
+    return {"msg":"file not found","status":404, "file": "None"}
+
+def lister(hsite,ctype,mid):
+  try:
+    first_image = []
+    if mid == "all":
+      if ctype == 'all':
+        if hsite == 'all':
+          files = []
+          for hlist in setting.hlist:
+            files = files + os.listdir(setting.imagedirectory+"/"+hlist)
+          print(files)
+        else:
+          files = os.listdir(setting.imagedirectory+"/"+hsite)
+      else:
+        files = os.listdir(setting.imagedirectory+"/"+hsite+"/"+ctype)
+        print(files)
+        for eachfile in files:
+          first_image.append(os.listdir(setting.imagedirectory+"/"+hsite+"/"+ctype+"/"+eachfile)[0])
+        files = list(zip(files, first_image))
+    else:
+      files = os.listdir(setting.imagedirectory+"/"+hsite+"/"+ctype+"/"+mid)
+    return {"msg":"file found","status":200, "files": files}
+  except FileNotFoundError:
+    return {"msg":"file not found","status":404, "files": "None"}
+
 # for now
 def leading_zero(digit_len,totalimg):
   totalimg = int(totalimg)
@@ -26,7 +59,8 @@ def leading_zero(digit_len,totalimg):
 # config list
 def makepdf(mid,hsite,cattype):
   mangaid = mid
-  hentai_site = hsite
+  hentai_site = setting.imagedirectory+"/"+hsite
+  hentai_site_pdf = setting.pdfdirectory+"/"+hsite
   print("Done Scrap : "+mangaid)
   if setting.verbose: print("domain     : ", domain)
   # if setting.verbose: print("first link : ", firstlink)
@@ -41,22 +75,23 @@ def makepdf(mid,hsite,cattype):
   with open(hentai_site+"/"+cattype+"/"+mangaid+"/"+mangaid.split("/")[-1]+".pdf","wb") as f:
     try:
       f.write(img2pdf.convert(onlyfiles))
-      os.rename(hentai_site+"/"+cattype+"/"+mangaid+"/"+mangaid+".pdf", setting.pdfdirectory+"/"+hentai_site+"/"+cattype+"/"+mangaid+".pdf")
+      os.rename(hentai_site+"/"+cattype+"/"+mangaid+"/"+mangaid+".pdf", hentai_site_pdf+"/"+cattype+"/"+mangaid+".pdf")
       print("Completed pdf at: pdfall/"+hentai_site+"/"+cattype+"/"+mangaid+".pdf")
     except Exception:
       for x in onlyfiles:
         PIL.Image.open(x).convert('RGB').save(x)
       f.write(img2pdf.convert(onlyfiles))
-      os.rename(hentai_site+"/"+cattype+"/"+mangaid+"/"+mangaid+".pdf", setting.pdfdirectory+"/"+hentai_site+"/"+cattype+"/"+mangaid+".pdf")
+      os.rename(hentai_site+"/"+cattype+"/"+mangaid+"/"+mangaid+".pdf", hentai_site_pdf+"/"+cattype+"/"+mangaid+".pdf")
       print("Completed pdf at: pdfall/"+hentai_site+"/"+cattype+"/"+mangaid+".pdf")
   return "pdfall/"+hentai_site+"/"+cattype+"/"+mangaid+".pdf"
 
 def crawl_nhentai(mid,hsite,cattype):
   mangaid = mid
 
-  hentai_site = hsite
+  hentai_site = setting.imagedirectory+"/"+hsite
+  hentai_site_pdf = hsite
   try:
-    os.makedirs(setting.pdfdirectory+"/"+hentai_site+"/"+cattype) 
+    os.makedirs(setting.pdfdirectory+"/"+hentai_site_pdf+"/"+cattype) 
     os.makedirs(hentai_site+"/"+cattype) 
   except FileExistsError:
     pass
@@ -89,9 +124,10 @@ def crawl_nhentai(mid,hsite,cattype):
 
 def crawl_erolord(mid,hsite,cattype):
   mangaid = mid
-  hentai_site = hsite
+  hentai_site = setting.imagedirectory+"/"+hsite
+  hentai_site_pdf = hsite
   try:
-    os.makedirs(setting.pdfdirectory+"/"+hentai_site+"/"+cattype) 
+    os.makedirs(setting.pdfdirectory+"/"+hentai_site_pdf+"/"+cattype) 
     os.makedirs(hentai_site+"/"+cattype) 
   except FileExistsError:
     pass
